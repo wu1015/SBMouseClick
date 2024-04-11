@@ -5,20 +5,24 @@ import threading
 import time
 
 # 需要连点的按键 .left .middle .right 
-btnClick=Button.right
+btnClick = Button.right
 # 连点次数，0则无限连点
-loopCount=10
-# 已经连点了的次数，不需要设置
-clickCount=1
-clickCount_lock=threading.Lock()
-# 记录点击次数
-clickSum=0
+loopCount = 0
+# 连点时间，单位为s，0则无限时间
+timeClick = 5
 # 连点的间隔
-timeSleep=0.5
+timeSleep = 0.5
+
 # 暂停/开始 热键
 pauseKey=keyboard.Key.pause
 # 结束 热键
 stopKey=keyboard.Key.esc
+
+# 已经连点了的次数，不需要设置
+clickCount = 1
+clickCount_lock = threading.Lock()
+# 记录点击次数
+clickSum = 0
 # 互斥访问以实现停止连点
 stopFlag = True
 stopFlag_lock = threading.Lock()
@@ -28,24 +32,24 @@ def MouseClick():
     global clickCount
     global clickSum
     mouse = Controller()
-    while clickCount<=loopCount or loopCount==0:
+    while clickCount <= loopCount or loopCount == 0:
         mouse.click(btnClick, 1)
         time.sleep(timeSleep)
-        print(clickCount)
         with stopFlag_lock:
             if(stopFlag):
                 break
         with clickCount_lock:
-            clickCount=clickCount+1
-            clickSum=clickSum+1
+            clickCount = clickCount+1
+            clickSum = clickSum+1
     with stopFlag_lock:
-        stopFlag=True
+        stopFlag = True
 
 def StopClick():
     global stopFlag
     global clickCount
     global clickSum
     global loopCount
+    global timeClick
     # 监听键盘键入
     with keyboard.Events() as events:
         for event in events:
@@ -59,16 +63,18 @@ def StopClick():
                     print(stopFlag)
                     with stopFlag_lock:
                         if(stopFlag):
-                            stopFlag=False
-                            threadClick = threading.Thread(target=MouseClick)
+                            stopFlag = False
+                            threadClick = threading.Thread(target= MouseClick)
                             threadClick.start()
                         else:
-                            stopFlag=True
+                            stopFlag = True
                         with clickCount_lock:
-                            if(clickCount>=loopCount):
-                                clickCount=1
+                            if(clickCount >= loopCount):
+                                if(loopCount == 0 and timeClick != 0):
+                                    loopCount = timeClick / timeSleep
+                                clickCount = 1
     with stopFlag_lock:
-        stopFlag=True
+        stopFlag = True
  
 
 threadStop = threading.Thread(target=StopClick)
