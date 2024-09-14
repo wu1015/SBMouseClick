@@ -75,9 +75,18 @@ def StopClick():
                                 clickCount = 1
     with stopFlag_lock:
         stopFlag = True
- 
 
-threadStop = threading.Thread(target=StopClick)
-threadStop.start()
-# 阻塞线程，免得程序结束了线程还没结束
-threadStop.join()
+if __name__ == '__main__':
+    btn=eval(input("0.Left 1.Middle 2.Right. Please type mouse click:\n"))
+    btn_list=["Left", "Middle", "Right"]
+    if(btn==0):
+        btnClick = Button.left
+    elif(btn==1):
+        btnClick = Button.middle
+    else:
+        btnClick = Button.right
+    print("Mouse {}, please press hotkey to start".format(btn_list[btn]))
+    threadStop = threading.Thread(target=StopClick)
+    threadStop.start()
+    # 阻塞线程，免得程序结束了线程还没结束
+    threadStop.join()
